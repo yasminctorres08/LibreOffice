@@ -15,6 +15,8 @@
         i[data-lucide] svg { display: inline-block; }
         .loader { border-top-color: #4f46e5; animation: spinner 1.5s linear infinite; }
         @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .animate-fade-in { animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="bg-slate-50">
@@ -23,7 +25,8 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
         
-        // --- PEGA AQUÍ TU URL DE GOOGLE APPS SCRIPT ---
+        // --- CONFIGURACIÓN CRÍTICA ---
+        // Pega aquí la URL de tu Google Apps Script
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyQRzlM7FoJ89-_B4CtJZsPT0eGdd9OR5dt4kLKJfLUBCJMNOYmlji4ufPaHVfJCfPM/exec"; 
 
         const Icon = ({ name, className }) => {
@@ -42,26 +45,30 @@
         };
 
         const questions = [
-            { id: 1, app: 'Writer', text: 'Para aplicar un estilo de título a un texto en Writer, es obligatorio seleccionar todo el párrafo primero.', answer: false, explanation: 'Falso. Solo necesitas colocar el cursor en el párrafo.', icon: "file-text", color: "text-blue-500" },
-            { id: 2, app: 'Writer', text: 'El atajo de teclado Ctrl + Enter inserta un salto de página manual en LibreOffice Writer.', answer: true, explanation: 'Verdadero. Es la forma rápida de forzar una nueva página.', icon: "file-text", color: "text-blue-500" },
-            { id: 3, app: 'Writer', text: 'La función "Clonar formato" permite aplicar el formato múltiples veces con doble clic.', answer: true, explanation: 'Verdadero. El doble clic bloquea la herramienta.', icon: "file-text", color: "text-blue-500" },
-            { id: 4, app: 'Calc', text: 'En LibreOffice Calc, todas las fórmulas deben comenzar con el signo igual (=).', answer: true, explanation: 'Verdadero. Indica que el contenido es una operación.', icon: "monitor", color: "text-green-500" },
-            { id: 5, app: 'Calc', text: 'Si eliminas una fila referenciada, Calc mostrará el error #REF!.', answer: true, explanation: 'Verdadero. Se pierde la referencia directa.', icon: "monitor", color: "text-green-500" },
-            { id: 6, app: 'Calc', text: 'La herramienta "Filtro automático" oculta filas pero no elimina datos.', answer: true, explanation: 'Verdadero. Es solo visualización.', icon: "monitor", color: "text-green-500" },
-            { id: 7, app: 'Impress', text: 'El "Patrón de diapositivas" aplica un diseño consistente a todas las diapositivas.', answer: true, explanation: 'Verdadero. Controla el formato general.', icon: "presentation", color: "text-orange-500" },
-            { id: 8, app: 'Impress', text: 'Las "Transiciones" son efectos entre diapositivas.', answer: false, explanation: 'Falso. Las transiciones son entre diapositivas, no dentro.', icon: "presentation", color: "text-orange-500" },
-            { id: 9, app: 'Impress', text: 'Es posible exportar a PDF de forma nativa en Impress.', answer: true, explanation: 'Verdadero. LibreOffice lo incluye por defecto.', icon: "presentation", color: "text-orange-500" },
-            { id: 10, app: 'General', text: 'LibreOffice permite guardar en formatos compatibles con Microsoft Office.', answer: true, explanation: 'Verdadero. Soporta .docx, .xlsx, etc.', icon: "settings", color: "text-gray-500" }
+            { id: 1, app: 'Calc', text: 'En Calc, las referencias absolutas se crean utilizando el símbolo de dólar ($) delante de la letra y el número (ej. $A$1).', answer: true, explanation: 'Verdadero. El signo $ fija la columna o fila para que no cambie al arrastrar la fórmula.', icon: "lock", color: "text-green-600" },
+            { id: 2, app: 'Calc', text: 'La función =SUMA(A1:A5) solo puede sumar celdas que estén una al lado de la otra.', answer: false, explanation: 'Falso. Puedes usar punto y coma (;) para sumar celdas separadas, ej. =SUMA(A1;C1;E1).', icon: "plus-circle", color: "text-green-600" },
+            { id: 3, app: 'Calc', text: 'Es posible proteger una sola hoja de cálculo con contraseña sin proteger todo el archivo completo.', answer: true, explanation: 'Verdadero. Puedes ir a Herramientas > Proteger hoja.', icon: "shield-check", color: "text-green-600" },
+            { id: 4, app: 'Calc', text: 'El "Formateo condicional" permite cambiar el color de una celda automáticamente si cumple un valor específico.', answer: true, explanation: 'Verdadero. Es ideal para resaltar aprobados o deudas.', icon: "palette", color: "text-green-600" },
+            { id: 5, app: 'Calc', text: 'Calc permite abrir y editar archivos en formato .xlsx creados originalmente en Microsoft Excel.', answer: true, explanation: 'Verdadero. Calc es altamente compatible con formatos de Office.', icon: "file-spreadsheet", color: "text-green-600" },
+            { id: 6, app: 'Calc', text: 'La herramienta "Escenarios" sirve para comparar diferentes conjuntos de datos dentro de las mismas celdas.', answer: true, explanation: 'Verdadero. Permite ver cómo cambian los resultados según diferentes variables.', icon: "layers", color: "text-green-600" },
+            { id: 7, app: 'Calc', text: 'En una hoja de Calc, el número máximo de columnas disponibles es 256.', answer: false, explanation: 'Falso. Calc soporta hasta 1024 columnas (AMJ) en versiones estándar.', icon: "columns", color: "text-green-600" },
+            { id: 8, app: 'Calc', text: 'Para combinar dos o más celdas en una sola, se debe utilizar el botón "Combinar y centrar celdas".', answer: true, explanation: 'Verdadero. Esta opción une las celdas seleccionadas en una.', icon: "grid", color: "text-green-600" },
+            { id: 9, app: 'Calc', text: 'Si escribes una fecha en una celda y Calc la alinea a la derecha, significa que la ha reconocido como un valor numérico/fecha válido.', answer: true, explanation: 'Verdadero. Por defecto, Calc alinea textos a la izquierda y números/fechas a la derecha.', icon: "calendar", color: "text-green-600" },
+            { id: 10, app: 'Calc', text: 'La función =PROMEDIO(A1:A10) incluirá las celdas vacías en el cálculo de la media.', answer: false, explanation: 'Falso. Las funciones estadísticas de Calc ignoran las celdas vacías.', icon: "divide", color: "text-green-600" },
+            { id: 11, app: 'Calc', text: 'En LibreOffice Calc, todas las fórmulas deben comenzar con el signo igual (=).', answer: true, explanation: 'Verdadero. Indica que el contenido es una operación.', icon: "monitor", color: "text-green-500" },
+            { id: 12, app: 'Calc', text: 'Si eliminas una fila referenciada, Calc mostrará el error #REF!.', answer: true, explanation: 'Verdadero. Se pierde la referencia directa.', icon: "monitor", color: "text-green-500" },
+            { id: 13, app: 'Calc', text: 'La herramienta "Filtro automático" oculta filas pero no elimina datos.', answer: true, explanation: 'Verdadero. Es solo visualización.', icon: "monitor", color: "text-green-500" },
         ];
 
         function App() {
-            const [appState, setAppState] = useState('start'); // start, playing, finished, sending, exit
+            const [appState, setAppState] = useState('start'); 
             const [userName, setUserName] = useState('');
             const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
             const [score, setScore] = useState(0);
             const [selectedAnswer, setSelectedAnswer] = useState(null);
             const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
             const [results, setResults] = useState([]);
+            const [errorMessage, setErrorMessage] = useState('');
 
             const handleStart = (e) => {
                 e.preventDefault();
@@ -92,6 +99,11 @@
             };
 
             const sendToDrive = async () => {
+                if (!WEB_APP_URL || WEB_APP_URL.includes("ESCRIBE_AQUI")) {
+                    setErrorMessage("Error: La URL de Google Apps Script no ha sido configurada.");
+                    return;
+                }
+
                 setAppState('sending');
                 const percentage = Math.round((score / questions.length) * 100);
                 
@@ -103,7 +115,6 @@
                 };
 
                 try {
-                    // Usamos fetch con mode 'no-cors' para Apps Script
                     await fetch(WEB_APP_URL, {
                         method: 'POST',
                         mode: 'no-cors',
@@ -111,24 +122,25 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
-                    setAppState('exit');
+                    
+                    setTimeout(() => setAppState('exit'), 1000);
                 } catch (error) {
-                    console.error("Error:", error);
-                    // Incluso si da error de CORS, el dato suele llegar a Google Sheets
-                    setAppState('exit'); 
+                    console.error("Error de envío:", error);
+                    setErrorMessage("Problema al enviar. Los datos podrían no haberse guardado.");
+                    setAppState('finished'); 
                 }
             };
 
             if (appState === 'exit') {
                 return (
-                    <div className="min-h-screen flex items-center justify-center bg-white p-6">
-                        <div className="text-center max-w-sm">
+                    <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6 animate-fade-in">
+                        <div className="bg-white p-10 rounded-3xl shadow-xl text-center max-w-sm">
                             <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
                                 <Icon name="check-circle" className="w-12 h-12" />
                             </div>
-                            <h2 className="text-2xl font-bold text-gray-800 mb-2">¡Datos Registrados!</h2>
-                            <p className="text-gray-600 mb-8">Tus respuestas han sido enviadas directamente a la hoja de cálculo del instructor.</p>
-                            <p className="text-xs text-gray-400 uppercase tracking-widest font-bold italic">Puedes cerrar esta ventana</p>
+                            <h2 className="text-2xl font-bold text-gray-800 mb-2">¡Completado!</h2>
+                            <p className="text-gray-600 mb-8 leading-relaxed">Tus respuestas sobre Calc han sido enviadas.</p>
+                            <p className="text-xs text-gray-400 uppercase tracking-widest font-black italic">Cerrar pestaña</p>
                         </div>
                     </div>
                 );
@@ -138,8 +150,8 @@
                 return (
                     <div className="min-h-screen flex items-center justify-center bg-white p-6">
                         <div className="text-center">
-                            <div className="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mb-4 mx-auto"></div>
-                            <h2 className="text-xl font-semibold text-gray-700">Enviando a Google Drive...</h2>
+                            <div className="loader ease-linear rounded-full border-4 border-t-4 border-gray-100 h-16 w-16 mb-4 mx-auto"></div>
+                            <h2 className="text-xl font-bold text-green-600">Sincronizando con Drive...</h2>
                         </div>
                     </div>
                 );
@@ -147,24 +159,28 @@
 
             if (appState === 'start') {
                 return (
-                    <div className="min-h-screen flex items-center justify-center p-4">
-                        <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl overflow-hidden">
-                            <div className="bg-indigo-600 p-8 text-white text-center">
-                                <Icon name="cloud" className="w-16 h-16 mb-4" />
-                                <h1 className="text-2xl font-bold uppercase">Registro Automático</h1>
-                                <p className="opacity-75 text-sm">Los resultados se guardarán en Drive</p>
+                    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-100">
+                        <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-200">
+                            <div className="bg-green-600 p-10 text-white text-center">
+                                <div className="bg-white/20 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 backdrop-blur-sm">
+                                    <Icon name="table-2" className="w-12 h-12" />
+                                </div>
+                                <h1 className="text-2xl font-black uppercase tracking-tight">Evaluación Calc</h1>
+                                <p className="opacity-80 text-sm mt-2">Pon a prueba tus conocimientos en hojas de cálculo</p>
                             </div>
                             <form onSubmit={handleStart} className="p-8">
-                                <label className="block text-gray-700 text-sm font-bold mb-2">Tu Nombre:</label>
+                                <label className="block text-gray-700 text-xs font-black uppercase tracking-widest mb-3">Tu Nombre:</label>
                                 <input 
                                     required 
-                                    className="w-full p-4 border-2 rounded-xl mb-6 outline-none focus:border-indigo-500" 
+                                    autoFocus
+                                    className="w-full p-4 border-2 border-gray-100 rounded-2xl mb-8 outline-none focus:border-green-500" 
                                     value={userName} 
                                     onChange={e => setUserName(e.target.value)}
-                                    placeholder="Nombre y Apellido"
+                                    placeholder="Nombre completo"
                                 />
-                                <button className="w-full bg-indigo-600 text-white font-bold py-4 rounded-xl hover:bg-indigo-700 transition-all shadow-lg">
-                                    EMPEZAR EVALUACIÓN
+                                <button className="w-full bg-green-600 text-white font-black py-5 rounded-2xl hover:bg-green-700 transition-all shadow-xl shadow-green-100 active:scale-95 flex items-center justify-center space-x-2">
+                                    <span>COMENZAR EXAMEN</span>
+                                    <Icon name="arrow-right" className="w-6 h-6" />
                                 </button>
                             </form>
                         </div>
@@ -174,17 +190,24 @@
 
             if (appState === 'finished') {
                 return (
-                    <div className="min-h-screen flex items-center justify-center p-4">
-                        <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl p-10 text-center border-t-8 border-indigo-600">
-                            <h2 className="text-gray-400 font-bold uppercase tracking-widest mb-2">Resultados para</h2>
-                            <h1 className="text-3xl font-black text-gray-800 mb-6">{userName}</h1>
-                            <div className="bg-indigo-50 rounded-3xl py-10 mb-8 border border-indigo-100">
-                                <div className="text-7xl font-black text-indigo-600">{score}</div>
-                                <div className="text-indigo-300 font-bold uppercase">puntos de {questions.length}</div>
+                    <div className="min-h-screen flex items-center justify-center p-4 bg-green-50">
+                        <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl p-10 text-center border-b-8 border-green-600 animate-fade-in">
+                            <h2 className="text-gray-400 font-bold uppercase tracking-widest mb-2 text-xs">Puntaje Obtenido</h2>
+                            <h1 className="text-3xl font-black text-gray-800 mb-8">{userName}</h1>
+                            <div className="bg-slate-50 rounded-3xl py-12 mb-6 border border-slate-100 shadow-inner">
+                                <div className="text-8xl font-black text-green-600 leading-none">{score}</div>
+                                <div className="text-green-300 font-black uppercase tracking-tighter mt-2 text-xl">de 10 aciertos</div>
                             </div>
-                            <button onClick={sendToDrive} className="w-full bg-indigo-600 text-white font-bold py-5 rounded-2xl flex items-center justify-center space-x-3 shadow-xl hover:bg-indigo-700">
-                                <Icon name="upload-cloud" className="w-6 h-6" />
-                                <span>GUARDAR EN DRIVE Y SALIR</span>
+
+                            {errorMessage && (
+                                <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-xl text-xs font-bold border border-red-100">
+                                    {errorMessage}
+                                </div>
+                            )}
+
+                            <button onClick={sendToDrive} className="w-full bg-green-600 text-white font-black py-5 rounded-2xl flex items-center justify-center space-x-3 shadow-2xl shadow-green-200 hover:bg-green-700 transition-all active:scale-95">
+                                <Icon name="upload" className="w-6 h-6" />
+                                <span>ENVIAR RESULTADOS</span>
                             </button>
                         </div>
                     </div>
@@ -195,38 +218,45 @@
             const isCorrect = isAnswerSubmitted && selectedAnswer === q.answer;
 
             return (
-                <div className="min-h-screen flex flex-col items-center justify-center p-4">
+                <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-slate-50">
                     <div className="max-w-2xl w-full">
-                        <div className="mb-4 flex justify-between px-2 text-xs font-bold text-gray-400">
-                            <span>PREGUNTA {currentQuestionIndex + 1} DE {questions.length}</span>
-                            <span>MÓDULO: {q.app}</span>
+                        <div className="mb-6 flex justify-between items-center px-4">
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Pregunta {currentQuestionIndex + 1} / 10</span>
+                            <span className="px-4 py-1.5 bg-green-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-md">LibreOffice Calc</span>
                         </div>
-                        <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
-                            <div className="p-8 sm:p-12">
-                                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-6 bg-slate-50 ${q.color}`}>
-                                    <Icon name={q.icon} className="w-8 h-8" />
+                        <div className="bg-white rounded-[2.5rem] shadow-xl overflow-hidden border border-gray-100 transition-all">
+                            <div className="p-10 sm:p-14 text-center">
+                                <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-10 bg-green-50 shadow-sm ${q.color}`}>
+                                    <Icon name={q.icon} className="w-10 h-10" />
                                 </div>
-                                <h2 className="text-2xl font-bold text-gray-800 leading-tight mb-10">{q.text}</h2>
-                                <div className="grid grid-cols-2 gap-4">
+                                <h2 className="text-2xl font-bold text-gray-800 leading-tight mb-12">{q.text}</h2>
+                                <div className="grid grid-cols-2 gap-6">
                                     <button 
                                         disabled={isAnswerSubmitted}
                                         onClick={() => handleAnswer(true)}
-                                        className={`py-5 rounded-2xl border-2 font-bold transition-all ${!isAnswerSubmitted ? 'border-gray-100 hover:border-indigo-600' : selectedAnswer === true ? (q.answer === true ? 'bg-green-500 border-green-500 text-white' : 'bg-red-500 border-red-500 text-white') : (q.answer === true ? 'border-green-200 text-green-200' : 'opacity-20')}`}
+                                        className={`py-6 rounded-2xl border-2 font-black uppercase tracking-widest text-sm transition-all shadow-sm ${!isAnswerSubmitted ? 'border-gray-100 hover:border-green-600 hover:text-green-600 hover:bg-green-50' : selectedAnswer === true ? (q.answer === true ? 'bg-green-500 border-green-500 text-white' : 'bg-red-500 border-red-500 text-white') : (q.answer === true ? 'border-green-200 text-green-200' : 'opacity-20')}`}
                                     >Verdadero</button>
                                     <button 
                                         disabled={isAnswerSubmitted}
                                         onClick={() => handleAnswer(false)}
-                                        className={`py-5 rounded-2xl border-2 font-bold transition-all ${!isAnswerSubmitted ? 'border-gray-100 hover:border-indigo-600' : selectedAnswer === false ? (q.answer === false ? 'bg-green-500 border-green-500 text-white' : 'bg-red-500 border-red-500 text-white') : (q.answer === false ? 'border-green-200 text-green-200' : 'opacity-20')}`}
+                                        className={`py-6 rounded-2xl border-2 font-black uppercase tracking-widest text-sm transition-all shadow-sm ${!isAnswerSubmitted ? 'border-gray-100 hover:border-green-600 hover:text-green-600 hover:bg-green-50' : selectedAnswer === false ? (q.answer === false ? 'bg-green-500 border-green-500 text-white' : 'bg-red-500 border-red-500 text-white') : (q.answer === false ? 'border-green-200 text-green-200' : 'opacity-20')}`}
                                     >Falso</button>
                                 </div>
                             </div>
                             {isAnswerSubmitted && (
-                                <div className={`p-8 border-t-4 ${isCorrect ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'}`}>
-                                    <p className="font-medium text-gray-700 mb-6 italic">{q.explanation}</p>
-                                    <button onClick={handleNext} className="w-full bg-gray-800 text-white py-4 rounded-xl font-bold flex items-center justify-center space-x-2">
-                                        <span>Continuar</span>
-                                        <Icon name="chevron-right" className="w-5 h-5" />
-                                    </button>
+                                <div className={`p-10 border-t-8 animate-fade-in ${isCorrect ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'}`}>
+                                    <div className="flex items-start space-x-4">
+                                        <div className={`p-2 rounded-full ${isCorrect ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                                            <Icon name={isCorrect ? "check-circle" : "alert-circle"} className="w-6 h-6" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="text-gray-800 text-lg mb-8 font-medium leading-relaxed">{q.explanation}</p>
+                                            <button onClick={handleNext} className="w-full sm:w-auto bg-gray-900 text-white py-4 px-10 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center space-x-3 hover:bg-black transition-all active:scale-95 shadow-xl shadow-gray-200">
+                                                <span>Siguiente</span>
+                                                <Icon name="chevron-right" className="w-5 h-5" />
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             )}
                         </div>
